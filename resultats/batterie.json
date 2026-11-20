@@ -1,0 +1,111 @@
+{
+  "batterie": {
+    "puissance_mw": 1.0,
+    "energie_mwh": 2.0,
+    "rendement_aller_retour": 0.88,
+    "cycles_par_jour": 1.0
+  },
+  "jours_calcules": 4338,
+  "par_annee": {
+    "2015": {
+      "jours": 361.0,
+      "revenu_parfait_eur": 16001.969,
+      "revenu_parfait_eur_par_jour": 44.327,
+      "part_captee_par_la_prevision_naive": 0.703,
+      "ecart_max_min_moyen_eur_mwh": 29.22
+    },
+    "2016": {
+      "jours": 366.0,
+      "revenu_parfait_eur": 18707.53,
+      "revenu_parfait_eur_par_jour": 51.113,
+      "part_captee_par_la_prevision_naive": 0.784,
+      "ecart_max_min_moyen_eur_mwh": 34.924
+    },
+    "2017": {
+      "jours": 365.0,
+      "revenu_parfait_eur": 17097.895,
+      "revenu_parfait_eur_par_jour": 46.844,
+      "part_captee_par_la_prevision_naive": 0.762,
+      "ecart_max_min_moyen_eur_mwh": 31.378
+    },
+    "2018": {
+      "jours": 365.0,
+      "revenu_parfait_eur": 18063.851,
+      "revenu_parfait_eur_par_jour": 49.49,
+      "part_captee_par_la_prevision_naive": 0.743,
+      "ecart_max_min_moyen_eur_mwh": 33.52
+    },
+    "2019": {
+      "jours": 365.0,
+      "revenu_parfait_eur": 14873.063,
+      "revenu_parfait_eur_par_jour": 40.748,
+      "part_captee_par_la_prevision_naive": 0.741,
+      "ecart_max_min_moyen_eur_mwh": 27.194
+    },
+    "2020": {
+      "jours": 366.0,
+      "revenu_parfait_eur": 14983.443,
+      "revenu_parfait_eur_par_jour": 40.938,
+      "part_captee_par_la_prevision_naive": 0.771,
+      "ecart_max_min_moyen_eur_mwh": 26.631
+    },
+    "2021": {
+      "jours": 365.0,
+      "revenu_parfait_eur": 40340.187,
+      "revenu_parfait_eur_par_jour": 110.521,
+      "part_captee_par_la_prevision_naive": 0.766,
+      "ecart_max_min_moyen_eur_mwh": 74.343
+    },
+    "2022": {
+      "jours": 365.0,
+      "revenu_parfait_eur": 92181.342,
+      "revenu_parfait_eur_par_jour": 252.552,
+      "part_captee_par_la_prevision_naive": 0.668,
+      "ecart_max_min_moyen_eur_mwh": 174.914
+    },
+    "2023": {
+      "jours": 365.0,
+      "revenu_parfait_eur": 47064.807,
+      "revenu_parfait_eur_par_jour": 128.945,
+      "part_captee_par_la_prevision_naive": 0.781,
+      "ecart_max_min_moyen_eur_mwh": 83.492
+    },
+    "2024": {
+      "jours": 366.0,
+      "revenu_parfait_eur": 45395.879,
+      "revenu_parfait_eur_par_jour": 124.032,
+      "part_captee_par_la_prevision_naive": 0.769,
+      "ecart_max_min_moyen_eur_mwh": 76.37
+    },
+    "2025": {
+      "jours": 365.0,
+      "revenu_parfait_eur": 55340.374,
+      "revenu_parfait_eur_par_jour": 151.617,
+      "part_captee_par_la_prevision_naive": 0.816,
+      "ecart_max_min_moyen_eur_mwh": 95.043
+    },
+    "2026": {
+      "jours": 324.0,
+      "revenu_parfait_eur": 80004.473,
+      "revenu_parfait_eur_par_jour": 246.927,
+      "part_captee_par_la_prevision_naive": 0.853,
+      "ecart_max_min_moyen_eur_mwh": 158.574
+    }
+  },
+  "quart_heure_contre_heure": {
+    "periode": [
+      "2025-10-01",
+      "2026-11-20"
+    ],
+    "jours": 416,
+    "revenu_quart_heure_eur": 92057.0,
+    "revenu_horaire_eur": 85489.0,
+    "gain_du_quart_heure_pct": 7.7
+  },
+  "sensibilite_2024_eur": {
+    "reference_1MW_2MWh_1cycle": 45396.0,
+    "2_cycles_par_jour": 59969.0,
+    "4_heures_1MW_4MWh": 78684.0,
+    "rendement_80_pct": 41231.0
+  }
+}

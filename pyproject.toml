@@ -1,10 +1,26 @@
 [project]
 name = "electricite-france"
 version = "0.1.0"
-description = "Add your description here"
+description = "Électricité en France : consommation et température, valeur d'une batterie sur le marché spot."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "holidays>=0.60",
     "matplotlib>=3.11.2",
     "pandas>=3.1.1",
+    "scipy>=1.14",
+    "statsmodels>=0.14.4",
 ]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/electricite"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
