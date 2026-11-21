@@ -30,6 +30,8 @@ climatisation (au-dessus de 22 °C), le jour de la semaine, les jours fériés, 
 - Le seuil de 15 °C n'est pas posé à la main : parmi les seuils entiers de 12 à 18 °C, c'est celui qui ajuste le
   mieux l'apprentissage (R² 0,9316, contre 0,9249 à 14 °C et 0,9308 à 16 °C).
 
+![Écart moyen de prévision par année, walk-forward 2016-2024](figures/A2_ecart_par_annee.png)
+
 ### Batterie en arbitrage sur le day-ahead France (5 janvier 2015 – 20 novembre 2026)
 
 Batterie de 1 MW pour 2 MWh, rendement aller-retour 88 %, au plus un cycle par jour. Chaque journée est un
@@ -46,6 +48,8 @@ de cycle. Trois stratégies, toutes payées aux prix réalisés : planning calcu
 \* 2015 : à partir du 5 janvier (361 jours) ; 2026 : jusqu'au 20 novembre (324 jours). Les deux prévisions sont
 comparées sur les mêmes 4 280 journées, sur 4 338 : sont écartés les jours de changement d'heure, leurs lendemains et
 les premiers jours de la série et du quart d'heure, faute de journées comparables avant eux.
+
+![Revenu annuel de la batterie selon ce qu'elle sait des prix, 2015-2026](figures/B1_revenu_batterie.png)
 
 - Les prix connus à l'avance donnent un plafond. Planifier sur les prix de la veille en capte 77 % sur l'ensemble des
   années, et planifier sur la moyenne des sept derniers jours 84 %. L'écart au plafond borne ce qu'une meilleure
