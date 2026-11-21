@@ -1,4 +1,4 @@
-"""Valeur d'une batterie en arbitrage sur le prix spot français.
+"""Arbitrage d'une batterie sur le prix day-ahead français.
 
 Chaque jour, la batterie achète de l'électricité quand elle est bon marché et la revend quand elle est chère.
 Le planning optimal d'une journée est un programme linéaire, résolu exactement par HiGHS (scipy.optimize.linprog) :
@@ -12,13 +12,18 @@ Le planning optimal d'une journée est un programme linéaire, résolu exactemen
 c_t et d_t sont les puissances achetée et revendue au réseau (MW), Δ la durée d'un pas (h), p_t le prix (€/MWh),
 η la racine du rendement aller-retour.
 
-Deux stratégies :
-- « prévision parfaite » : le planning est calculé sur les prix réalisés. C'est un plafond, inatteignable.
-- « prévision naïve » : le planning est calculé sur les prix de la veille aux mêmes heures, puis payé aux prix
-  réalisés. L'écart entre les deux mesure ce que coûte l'ignorance des prix.
+Trois stratégies, toutes payées aux prix réalisés :
+- « prévision parfaite » : le planning est calculé sur les prix réalisés eux-mêmes. C'est un plafond, inatteignable.
+- « moyenne des 7 derniers jours » : le planning est calculé sur le profil de prix moyen des sept journées
+  précédentes (au moins cinq journées comparables exigées).
+- « veille » : le planning est calculé sur les prix de la veille aux mêmes heures.
+L'écart entre une stratégie et le plafond borne ce qu'une meilleure prévision pourrait ajouter.
 
-Hypothèses : batterie preneuse de prix (elle ne fait pas bouger le marché), pas de frais de réseau, pas de coût de
-vieillissement, exécution parfaite au prix spot.
+Le programme linéaire n'interdit pas d'acheter et de revendre au même pas, ce qu'une batterie réelle ne fait pas :
+la colonne `pas_simultanes` compte les pas où la solution de la prévision parfaite le fait.
+
+Hypothèses : batterie preneuse de prix (elle ne fait pas bouger le marché), pas de frais de réseau ou de marché, pas
+de coût de vieillissement, chaque journée optimisée seule, exécution exacte au prix day-ahead.
 """
 from __future__ import annotations
 
@@ -27,6 +32,9 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 from scipy.optimize import linprog
+
+JOURS_MOYENNE = 7      # la moyenne porte sur les sept journées précédentes…
+MIN_JOURS_MOYENNE = 5  # …dont au moins cinq comparables (même nombre de pas, même durée de pas)
 
 
 @dataclass(frozen=True)
@@ -71,6 +79,12 @@ def revenu_au_prix(prix: np.ndarray, c: np.ndarray, d: np.ndarray, pas_h: float)
     return float(np.sum(np.asarray(prix) * (d - c)) * pas_h)
 
 
+def _planifier_puis_payer(prevision: np.ndarray, realise: np.ndarray, pas_h: float, batterie: Batterie) -> float:
+    """Planning calculé sur une prévision des prix, payé aux prix réalisés."""
+    _, c, d, _ = optimiser_journee(prevision, pas_h, batterie)
+    return revenu_au_prix(realise, c, d, pas_h)
+
+
 def _journees(prix: pd.Series):
     """Découpe la série en journées de marché (heure de Paris) complètes et régulières : (date, prix, pas en h)."""
     for jour, p in prix.groupby(prix.index.date):
@@ -86,18 +100,26 @@ def _journees(prix: pd.Series):
 
 
 def revenus_journaliers(prix: pd.Series, batterie: Batterie = Batterie()) -> pd.DataFrame:
-    """Revenu de chaque journée, en prévision parfaite et en prévision naïve (prix de la veille)."""
-    lignes, veille = [], None
+    """Revenu de chaque journée selon les trois stratégies (NaN quand la prévision n'existe pas ce jour-là)."""
+    lignes, passe = [], []  # passe : (date, prix, pas) des journées des sept derniers jours
     for jour, p, pas_h in _journees(prix):
-        parfait, *_ = optimiser_journee(p, pas_h, batterie)
-        naif = np.nan
-        if veille is not None and len(veille[1]) == len(p) and veille[2] == pas_h \
-                and (pd.Timestamp(jour) - pd.Timestamp(veille[0])).days == 1:
-            _, c, d, _ = optimiser_journee(veille[1], pas_h, batterie)
-            naif = revenu_au_prix(p, c, d, pas_h)
-        lignes.append({"date": pd.Timestamp(jour), "pas_h": pas_h, "parfait_eur": parfait, "naif_eur": naif,
-                       "ecart_max_min_eur_mwh": float(p.max() - p.min())})
-        veille = (jour, p, pas_h)
+        jour = pd.Timestamp(jour)
+        parfait, c, d, _ = optimiser_journee(p, pas_h, batterie)
+        # seules les journées de même longueur et de même pas servent de prévision
+        comparables = {j: q for j, q, pas in passe if len(q) == len(p) and pas == pas_h}
+        veille = comparables.get(jour - pd.Timedelta(days=1))
+        semaine = [q for j, q in comparables.items() if 1 <= (jour - j).days <= JOURS_MOYENNE]
+        lignes.append({
+            "date": jour,
+            "pas_h": pas_h,
+            "parfait_eur": parfait,
+            "moyenne7_eur": (_planifier_puis_payer(np.mean(semaine, axis=0), p, pas_h, batterie)
+                             if len(semaine) >= MIN_JOURS_MOYENNE else np.nan),
+            "naif_eur": _planifier_puis_payer(veille, p, pas_h, batterie) if veille is not None else np.nan,
+            "pas_simultanes": int(np.sum(np.minimum(c, d) > 1e-6)),
+            "ecart_max_min_eur_mwh": float(p.max() - p.min()),
+        })
+        passe = [x for x in passe if (jour - x[0]).days < JOURS_MOYENNE] + [(jour, p, pas_h)]
     return pd.DataFrame(lignes).set_index("date")
 
 

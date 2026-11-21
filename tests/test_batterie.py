@@ -64,6 +64,35 @@ def test_prevision_naive_jamais_au_dessus_du_parfait():
     assert (jours["naif_eur"].dropna() <= jours["parfait_eur"][jours["naif_eur"].notna()] + 1e-6).all()
 
 
+@pytest.mark.parametrize("jour, heures", [("2024-03-31", 23), ("2024-10-27", 25)])
+def test_journee_de_changement_d_heure(jour, heures):
+    # trois journées autour du changement d'heure ; chaque jour, 10 €/MWh les deux premières heures, 100 €/MWh
+    # les deux dernières, 50 €/MWh sinon : sans pertes, la batterie gagne 2 × (100 − 10) = 180 € chaque jour
+    j = pd.Timestamp(jour)
+    debut, fin = (j - pd.Timedelta(days=1)).tz_localize("Europe/Paris"), (j + pd.Timedelta(days=2)).tz_localize(
+        "Europe/Paris")  # minuit heure de Paris, la veille et le surlendemain
+    prix = pd.Series(50.0, index=pd.date_range(debut, fin, freq="h", inclusive="left"))
+    for _, heures_du_jour in prix.groupby(prix.index.date):
+        prix.loc[heures_du_jour.index[:2]] = 10.0
+        prix.loc[heures_du_jour.index[-2:]] = 100.0
+    jours = revenus_journaliers(prix, SANS_PERTES)
+    assert (prix.index.date == pd.Timestamp(jour).date()).sum() == heures
+    assert len(jours) == 3 and jours["parfait_eur"].tolist() == pytest.approx([180.0] * 3)
+    # la journée de 23 ou 25 heures et son lendemain n'ont pas de veille de même longueur
+    assert jours["naif_eur"].isna().all()
+
+
+def test_moyenne_des_sept_jours():
+    # dix journées identiques : la moyenne des jours précédents est le prix réalisé, donc elle atteint le plafond,
+    # dès qu'il y a cinq journées précédentes
+    index = pd.date_range("2024-03-04", periods=24 * 10, freq="h", tz="Europe/Paris")
+    prix = pd.Series(50 + 30 * np.sin(np.arange(len(index)) * 2 * np.pi / 24), index=index)
+    jours = revenus_journaliers(prix, Batterie())
+    assert jours["moyenne7_eur"].isna().sum() == 5
+    assert jours["moyenne7_eur"].dropna().tolist() == pytest.approx(jours["parfait_eur"].iloc[5:].tolist())
+    assert (jours["pas_simultanes"] == 0).all()
+
+
 def test_agregation_horaire():
     index = pd.date_range("2025-10-02", periods=8, freq="15min", tz="Europe/Paris")
     prix = pd.Series([1, 2, 3, 4, 10, 20, 30, 40], index=index, dtype=float)
