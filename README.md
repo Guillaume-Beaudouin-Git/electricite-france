@@ -1,5 +1,13 @@
 # Électricité en France : consommation, température et arbitrage d'une batterie sur le day-ahead
 
+> **In English.** *Demand:* a temperature and calendar model (R² 0.93 on 2013-2021), re-fitted each year on the
+> previous years only, keeps its yearly mean error between −1.0% and +0.1% from 2016 to 2019; from 2022 to 2024,
+> consumption runs 3 to 6% below its forecast. *Battery:* 1 MW / 2 MWh on the French day-ahead market, 2015-2026:
+> planning on the previous seven days' average prices captures 84% of the perfect-foresight revenue, planning on the
+> previous day's prices 77%. Since the market moved to 15-minute prices (1 October 2025), choosing quarter-hours
+> rather than one power level per hour adds 7.7% with known prices, 3.1% when planning on the previous day's prices.
+> Code written by an AI coding agent (Claude Code) under the author's direction.
+
 Deux questions, traitées sur données publiques :
 
 1. **Un modèle simple de la consommation française tient-il hors échantillon, et quand se trompe-t-il ?**
